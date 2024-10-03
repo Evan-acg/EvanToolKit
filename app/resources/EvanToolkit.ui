@@ -152,6 +152,9 @@
                      <property name="text">
                       <string>升序</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -180,6 +183,9 @@
                      </property>
                      <property name="text">
                       <string>文件名</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>

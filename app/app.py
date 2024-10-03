@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QRadioButton,
+    QGroupBox,
 )
 
 ui_loader = QUiLoader()
@@ -32,6 +33,14 @@ def open_folder_dialog() -> str:
 def is_image(path: str) -> bool:
     kind = filetype.guess(path)
     return getattr(kind, "mime", "").startswith("image/")
+
+
+def find_element(root, type, name, cb_name, default):
+    widget = root.findChild(type, name)
+    if widget is None:
+        return default
+    if hasattr(widget, cb_name):
+        return getattr(widget, cb_name)()
 
 
 class EvanToolkitApp(QApplication):
@@ -85,6 +94,32 @@ class EvanToolkitApp(QApplication):
                 osp.join(folder_path, file) for file in os.listdir(folder_path)
             ]
         image_paths = [path for path in image_paths if is_image(path)]
+
+        sort_action_map = {
+            "radio_sort_by_filename": lambda x: osp.basename(x),
+            "radio_sort_by_filesize": lambda x: osp.getsize(x),
+        }
+
+        # is_desc = self.ui.findChild(QRadioButton, "radio_desc").isChecked()
+        is_desc = find_element(self.ui, QRadioButton, "radio_desc", "isChecked", False)
+        sorted_by = ""
+
+        radio_container = self.ui.findChild(QGroupBox, "sort_by_zone")
+        if radio_container is not None:
+            radios: t.Iterable[QRadioButton | None] = radio_container.findChildren(
+                QRadioButton
+            )
+            for radio in radios:
+                if radio is None:
+                    continue
+                if radio.isChecked():
+                    sorted_by = radio.objectName()
+                    break
+
+        image_paths = sorted(
+            image_paths, key=sort_action_map[sorted_by], reverse=is_desc
+        )
+
         container: QListWidget | None = self.ui.findChild(QListWidget, "image_list")
 
         if container is None:
