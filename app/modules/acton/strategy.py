@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from os import PathLike
 import os
 import typing as t
@@ -15,7 +16,19 @@ ImageAcquirePayload = t.TypedDict(
 )
 
 
-class ActionImageAcquire:
+P = t.TypeVar("P")
+
+
+class StrategyActon(ABC, t.Generic[P]):
+    def __init__(self, payload: P | None) -> None:
+        self.payload: P | None = payload
+
+    @abstractmethod
+    def invoke(self) -> None:
+        pass
+
+
+class ActionImageAcquire(StrategyActon[ImageAcquirePayload]):
     def __init__(self, payload: ImageAcquirePayload) -> None:
         self.payload: ImageAcquirePayload = payload
 
@@ -38,3 +51,11 @@ class ActionImageAcquire:
             self.payload["elements"] = list(
                 filter(self.payload["filter"], self.payload["elements"])
             )
+
+
+class ActionImageSort(StopAsyncIteration):
+    def __init__(self) -> None:
+        pass
+
+    def invoke(self) -> None:
+        pass

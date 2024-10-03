@@ -1,8 +1,9 @@
 import os
+
 import filetype  # type: ignore
 import pytest
 
-from app.modules.image.strategy import ImageAcquirePayload, ActionImageAcquire
+from app.modules.acton.strategy import ActionImageAcquire, ImageAcquirePayload
 
 
 @pytest.mark.skip(reason="utils function")

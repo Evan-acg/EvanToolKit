@@ -17,7 +17,8 @@ from PySide6.QtWidgets import (
     QGroupBox,
 )
 
-from app.modules.image.strategy import ImageAcquirePayload, ActionImageAcquire
+from app.modules.acton.strategy import ImageAcquirePayload, ActionImageAcquire
+from app.modules.image.blz import ImageToolBlz
 
 ui_loader = QUiLoader()
 
@@ -48,98 +49,103 @@ class EvanToolkitApp(QApplication):
     def __init__(self) -> None:
         super().__init__([])
         self.ui = ui_loader.load("app/resources/EvanToolkit.ui")
-        widget = self.ui.findChild(QLineEdit, "inp_folder")
-        self.inp_folder: QLineEdit = t.cast(QLineEdit, widget)
+        self.blz = ImageToolBlz(self.ui)
 
-        self.inp_folder.setText(
-            r"\\Eden_ds\sex\日本\图集\@仓木麻衣@青野真衣@くらき まい"
-        )
+        # self.inp_folder: QLineEdit = t.cast(QLineEdit, widget)
 
-        self.button_action_register()
+        # self.inp_folder.setText(
+        #     r"\\Eden_ds\sex\日本\图集\@仓木麻衣@青野真衣@くらき まい"
+        # )
 
-    def action_register(self, actions) -> None:
-        for widget_type, widget_name, callback in actions:
-            widget = self.ui.findChild(widget_type, widget_name)
+        # self.button_action_register()
 
-            if widget is None:
-                continue
-            widget.clicked.connect(callback)
+    # def action_register(self, actions) -> None:
+    #     for widget_type, widget_name, callback in actions:
+    #         widget = self.ui.findChild(widget_type, widget_name)
 
-    def button_action_register(self):
-        actions = [
-            (QPushButton, "btn_refresh", self.on_refresh),
-            (QPushButton, "btn_select_folder", self.on_open_folder_select_dialog),
-        ]
-        self.action_register(actions)
+    #         if widget is None:
+    #             continue
+    #         widget.clicked.connect(callback)
 
-    def on_refresh(self) -> None:
-        folder_path: str = self.inp_folder.text()
-        if not folder_path:
-            QMessageBox.warning(self.ui, "Warning", "请先选择文件夹")
-            return
-        if not osp.exists(folder_path):
-            QMessageBox.warning(self.ui, "Warning", "文件夹不存在")
-            return
+    # def button_action_register(self):
+    #     actions = [
+    #         (QPushButton, "btn_refresh", self.on_refresh),
+    #         (QPushButton, "btn_select_folder", self.on_open_folder_select_dialog),
+    #     ]
+    #     self.action_register(actions)
 
-        is_deeps = find_element(
-            self.ui, QRadioButton, "radio_multiple_deeps", "isChecked", False
-        )
+    # def find_images(self, path: str, deep: bool):
+    #     image_payload: ImageAcquirePayload = {
+    #         "deep": deep,
+    #         "path": path,
+    #         "elements": [],
+    #         "filter": lambda x: is_image(x),
+    #     }
 
-        image_payload: ImageAcquirePayload = {
-            "deep": is_deeps,
-            "path": folder_path,
-            "elements": [],
-            "filter": lambda x: is_image(x),
-        }
+    #     action = ActionImageAcquire(image_payload)
+    #     action.invoke()
+    #     return image_payload["elements"]
 
-        action = ActionImageAcquire(image_payload)
-        action.invoke()
+    # def sort_images(self, items: t.Sequence[str | os.PathLike[str]], is_desc: bool):
+    #     sorted_by: str = ""
+    #     sort_action_map = {
+    #         "radio_sort_by_filename": lambda x: osp.basename(x),
+    #         "radio_sort_by_filesize": lambda x: osp.getsize(x),
+    #     }
 
-        image_paths = image_payload["elements"]
+    #     radio_container = self.ui.findChild(QGroupBox, "sort_by_zone")
+    #     if radio_container is not None:
+    #         radios: t.Iterable[QRadioButton | None] = radio_container.findChildren(
+    #             QRadioButton
+    #         )
+    #         for radio in radios:
+    #             if radio is None:
+    #                 continue
+    #             if radio.isChecked():
+    #                 sorted_by = radio.objectName()
+    #                 break
 
-        sort_action_map = {
-            "radio_sort_by_filename": lambda x: osp.basename(x),
-            "radio_sort_by_filesize": lambda x: osp.getsize(x),
-        }
+    #     return sorted(items, key=sort_action_map[sorted_by], reverse=is_desc)
 
-        is_desc = find_element(self.ui, QRadioButton, "radio_desc", "isChecked", False)
-        sorted_by = ""
+    # def append_list_item_to_container(
+    #     self, container: QListWidget, items: t.Sequence[str | os.PathLike[str]]
+    # ) -> None:
+    #     container.clear()
+    #     for image_path in items:
+    #         item = QListWidgetItem(str(image_path))
+    #         pixmap = QPixmap(image_path).scaledToWidth(256)
+    #         item.setIcon(QIcon(pixmap))
+    #         item.setText(osp.basename(image_path))
+    #         container.addItem(item)
 
-        radio_container = self.ui.findChild(QGroupBox, "sort_by_zone")
-        if radio_container is not None:
-            radios: t.Iterable[QRadioButton | None] = radio_container.findChildren(
-                QRadioButton
-            )
-            for radio in radios:
-                if radio is None:
-                    continue
-                if radio.isChecked():
-                    sorted_by = radio.objectName()
-                    break
+    # def on_refresh(self) -> None:
+    #     folder_path: str = self.inp_folder.text()
+    #     is_deeps: bool = find_element(
+    #         self.ui, QRadioButton, "radio_multiple_deeps", "isChecked", False
+    #     )
+    #     is_desc = find_element(self.ui, QRadioButton, "radio_desc", "isChecked", False)
 
-        image_paths = sorted(
-            image_paths, key=sort_action_map[sorted_by], reverse=is_desc
-        )
+    #     if not folder_path:
+    #         QMessageBox.warning(self.ui, "Warning", "请先选择文件夹")
+    #         return
+    #     if not osp.exists(folder_path):
+    #         QMessageBox.warning(self.ui, "Warning", "文件夹不存在")
+    #         return
 
-        container: QListWidget | None = self.ui.findChild(QListWidget, "image_list")
+    #     image_paths = self.find_images(folder_path, is_deeps)
+    #     image_paths = self.sort_images(image_paths, is_desc)
 
-        if container is None:
-            return
+    #     container: QListWidget | None = self.ui.findChild(QListWidget, "image_list")
 
-        container.clear()
+    #     if container is None:
+    #         return
 
-        for image_path in image_paths:
-            print(image_path)
-            item = QListWidgetItem(image_path)
-            pixmap = QPixmap(image_path).scaledToWidth(256)
-            item.setIcon(QIcon(pixmap))
-            item.setText(osp.basename(image_path))
-            container.addItem(item)
+    #     self.append_list_item_to_container(container, image_paths)
 
-    def on_open_folder_select_dialog(self) -> None:
-        folder_path = open_folder_dialog()
-        if folder_path:
-            self.inp_folder.setText(folder_path)
+    # def on_open_folder_select_dialog(self) -> None:
+    #     folder_path = open_folder_dialog()
+    #     if folder_path:
+    #         self.inp_folder.setText(folder_path)
 
 
 def main():
