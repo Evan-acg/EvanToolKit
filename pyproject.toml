@@ -1,0 +1,9 @@
+[project]
+name = "evan_toolkit"
+version = "0.1.0"
+authors = ["Evan"]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests/cases"]
+addopts = "-vs --lf"

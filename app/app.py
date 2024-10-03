@@ -3,7 +3,6 @@ import os.path as osp
 import typing as t
 
 import filetype  # type: ignore
-from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
@@ -17,6 +16,8 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QGroupBox,
 )
+
+from app.modules.image.strategy import ImageAcquirePayload, ActionImageAcquire
 
 ui_loader = QUiLoader()
 
@@ -80,27 +81,27 @@ class EvanToolkitApp(QApplication):
             QMessageBox.warning(self.ui, "Warning", "文件夹不存在")
             return
 
-        radio = self.ui.findChild(QRadioButton, "radio_multiple_deeps")
-        is_deeps = radio.isChecked() if hasattr(radio, "isChecked") else False
+        is_deeps = find_element(
+            self.ui, QRadioButton, "radio_multiple_deeps", "isChecked", False
+        )
 
-        if is_deeps:
-            image_paths = [
-                osp.join(root, file)
-                for root, _, files in os.walk(folder_path)
-                for file in files
-            ]
-        else:
-            image_paths = [
-                osp.join(folder_path, file) for file in os.listdir(folder_path)
-            ]
-        image_paths = [path for path in image_paths if is_image(path)]
+        image_payload: ImageAcquirePayload = {
+            "deep": is_deeps,
+            "path": folder_path,
+            "elements": [],
+            "filter": lambda x: is_image(x),
+        }
+
+        action = ActionImageAcquire(image_payload)
+        action.invoke()
+
+        image_paths = image_payload["elements"]
 
         sort_action_map = {
             "radio_sort_by_filename": lambda x: osp.basename(x),
             "radio_sort_by_filesize": lambda x: osp.getsize(x),
         }
 
-        # is_desc = self.ui.findChild(QRadioButton, "radio_desc").isChecked()
         is_desc = find_element(self.ui, QRadioButton, "radio_desc", "isChecked", False)
         sorted_by = ""
 
