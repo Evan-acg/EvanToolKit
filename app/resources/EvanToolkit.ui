@@ -63,6 +63,9 @@
             <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1">
              <item>
               <widget class="QRadioButton" name="redio_single_deeps">
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="text">
                 <string>单层</string>
                </property>
@@ -73,6 +76,9 @@
              </item>
              <item>
               <widget class="QRadioButton" name="radio_multiple_deeps">
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="text">
                 <string>深层</string>
                </property>
@@ -88,6 +94,9 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>选择</string>
              </property>
@@ -101,6 +110,9 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>刷新</string>
              </property>
@@ -111,6 +123,9 @@
         </item>
         <item>
          <widget class="QGroupBox" name="operation_zone">
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="title">
            <string>操作区</string>
           </property>
@@ -131,6 +146,9 @@
                   <layout class="QHBoxLayout" name="horizontalLayout_5">
                    <item>
                     <widget class="QRadioButton" name="radio_asc">
+                     <property name="cursor">
+                      <cursorShape>PointingHandCursor</cursorShape>
+                     </property>
                      <property name="text">
                       <string>升序</string>
                      </property>
@@ -138,6 +156,9 @@
                    </item>
                    <item>
                     <widget class="QRadioButton" name="radio_desc">
+                     <property name="cursor">
+                      <cursorShape>PointingHandCursor</cursorShape>
+                     </property>
                      <property name="text">
                       <string>降序</string>
                      </property>
@@ -154,6 +175,9 @@
                   <layout class="QHBoxLayout" name="horizontalLayout_4">
                    <item>
                     <widget class="QRadioButton" name="radio_sort_by_filename">
+                     <property name="cursor">
+                      <cursorShape>PointingHandCursor</cursorShape>
+                     </property>
                      <property name="text">
                       <string>文件名</string>
                      </property>
@@ -161,6 +185,9 @@
                    </item>
                    <item>
                     <widget class="QRadioButton" name="radio_sort_by_filesize">
+                     <property name="cursor">
+                      <cursorShape>PointingHandCursor</cursorShape>
+                     </property>
                      <property name="text">
                       <string>大小</string>
                      </property>
@@ -226,6 +253,9 @@
                 <layout class="QVBoxLayout" name="verticalLayout_3">
                  <item>
                   <widget class="QPushButton" name="btn_rename_by_shoot">
+                   <property name="cursor">
+                    <cursorShape>OpenHandCursor</cursorShape>
+                   </property>
                    <property name="text">
                     <string>使用拍摄日期重命名</string>
                    </property>
@@ -233,6 +263,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="btn_move_to">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
                    <property name="text">
                     <string>移动到</string>
                    </property>

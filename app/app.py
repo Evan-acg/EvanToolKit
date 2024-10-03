@@ -1,15 +1,35 @@
-from PySide6.QtWidgets import QApplication, QPushButton, QLineEdit, QFileDialog
-from PySide6.QtUiTools import QUiLoader
+import os
 import typing as t
+
+import filetype
+from PySide6.QtUiTools import QUiLoader
+
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QLineEdit,
+    QPushButton,
+    QMessageBox,
+    QRadioButton,
+)
+import os.path as osp
+
 
 ui_loader = QUiLoader()
 
 
 def open_folder_dialog() -> str:
-    folder_path: str = QFileDialog.getExistingDirectory(None, "Select Folder", "")
+    folder_path: str = QFileDialog.getExistingDirectory(
+        None, "Select Folder", osp.expanduser("~")
+    )
     if folder_path:
         return folder_path
     return ""
+
+
+def is_image(path: str) -> bool:
+    kind = filetype.guess(path)
+    return getattr(kind, "mime", "").startswith("image/")
 
 
 class EvanToolkitApp(QApplication):
@@ -19,21 +39,53 @@ class EvanToolkitApp(QApplication):
         widget = self.ui.findChild(QLineEdit, "inp_folder")
         self.inp_folder: QLineEdit = t.cast(QLineEdit, widget)
 
-        self.action_register()
+        self.button_action_register()
 
-    def action_register(self):
-        btn_refresh = self.ui.findChild(QPushButton, "btn_refresh")
-        btn_refresh.clicked.connect(self.on_refresh)
+    def action_register(self, actions) -> None:
+        for widget_type, widget_name, callback in actions:
+            widget = self.ui.findChild(widget_type, widget_name)
 
-        btn_select_folder = self.ui.findChild(QPushButton, "btn_select_folder")
-        btn_select_folder.clicked.connect(self.on_open_folder_select_dialog)
+            if widget is None:
+                continue
+            widget.clicked.connect(callback)
+
+    def button_action_register(self):
+        actions = [
+            (QPushButton, "btn_refresh", self.on_refresh),
+            (QPushButton, "btn_select_folder", self.on_open_folder_select_dialog),
+        ]
+        self.action_register(actions)
 
     def on_refresh(self) -> None:
-        print("Refresh button clicked")
+        folder_path: str = self.inp_folder.text()
+        if not folder_path:
+            QMessageBox.warning(self.ui, "Warning", "请先选择文件夹")
+            return
+        if not osp.exists(folder_path):
+            QMessageBox.warning(self.ui, "Warning", "文件夹不存在")
+            return
+
+        radio = self.ui.findChild(QRadioButton, "radio_multiple_deeps")
+        is_deeps = radio.isChecked() if hasattr(radio, "isChecked") else False
+
+        if is_deeps:
+            image_paths = [
+                osp.join(root, file)
+                for root, dirs, files in os.walk(folder_path)
+                for file in files
+            ]
+        else:
+            image_paths = [
+                osp.join(folder_path, file) for file in os.listdir(folder_path)
+            ]
+        for image_path in image_paths:
+            if is_image(image_path):
+                print(image_path)
 
     def on_open_folder_select_dialog(self) -> None:
         folder_path = open_folder_dialog()
-        self.inp_folder.setText(folder_path)
+        if folder_path:
+            self.inp_folder.setText(folder_path)
 
 
 def main():
