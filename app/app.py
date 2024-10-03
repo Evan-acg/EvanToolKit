@@ -1,19 +1,21 @@
 import os
+import os.path as osp
 import typing as t
 
-import filetype
+import filetype  # type: ignore
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtUiTools import QUiLoader
-
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
     QLineEdit,
-    QPushButton,
+    QListWidget,
+    QListWidgetItem,
     QMessageBox,
+    QPushButton,
     QRadioButton,
 )
-import os.path as osp
-
 
 ui_loader = QUiLoader()
 
@@ -38,6 +40,10 @@ class EvanToolkitApp(QApplication):
         self.ui = ui_loader.load("app/resources/EvanToolkit.ui")
         widget = self.ui.findChild(QLineEdit, "inp_folder")
         self.inp_folder: QLineEdit = t.cast(QLineEdit, widget)
+
+        self.inp_folder.setText(
+            r"\\Eden_ds\sex\日本\图集\@仓木麻衣@青野真衣@くらき まい"
+        )
 
         self.button_action_register()
 
@@ -71,16 +77,28 @@ class EvanToolkitApp(QApplication):
         if is_deeps:
             image_paths = [
                 osp.join(root, file)
-                for root, dirs, files in os.walk(folder_path)
+                for root, _, files in os.walk(folder_path)
                 for file in files
             ]
         else:
             image_paths = [
                 osp.join(folder_path, file) for file in os.listdir(folder_path)
             ]
+        image_paths = [path for path in image_paths if is_image(path)]
+        container: QListWidget | None = self.ui.findChild(QListWidget, "image_list")
+
+        if container is None:
+            return
+
+        container.clear()
+
         for image_path in image_paths:
-            if is_image(image_path):
-                print(image_path)
+            print(image_path)
+            item = QListWidgetItem(image_path)
+            pixmap = QPixmap(image_path).scaledToWidth(256)
+            item.setIcon(QIcon(pixmap))
+            item.setText(osp.basename(image_path))
+            container.addItem(item)
 
     def on_open_folder_select_dialog(self) -> None:
         folder_path = open_folder_dialog()
