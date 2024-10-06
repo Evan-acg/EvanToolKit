@@ -1,12 +1,16 @@
 import typing as t
 
-from PySide6.QtWidgets import QPushButton, QWidget, QLineEdit, QListWidget
+from PySide6.QtWidgets import QPushButton, QWidget, QLineEdit, QListWidget, QRadioButton
 
 from app.modules.common.mediator import (
     FindWorkFolderButtonComp,
     FolderInputMediator,
     ImageStageMediator,
     RefreshImageButtonComp,
+    SortAsAccRadioComp,
+    SortAsDescRadioComp,
+    SortByFileSizeRadioComp,
+    SortByFilenameRadioComp,
 )
 
 
@@ -15,6 +19,11 @@ image_stage_mediator = ImageStageMediator()
 
 find_folder_button_comp = FindWorkFolderButtonComp()
 refresh_image_button_comp = RefreshImageButtonComp()
+
+sort_by_filename_radio_comp = SortByFilenameRadioComp()
+sort_by_filesize_radio_comp = SortByFileSizeRadioComp()
+sort_as_asc_radio_comp = SortAsAccRadioComp()
+sort_as_desc_radio_comp = SortAsDescRadioComp()
 
 
 class ImageToolBlz:
@@ -35,6 +44,22 @@ class ImageToolBlz:
         refresh_image_button_comp.subscribe(folder_input_mediator, "button")
         refresh_image_button_comp.subscribe(image_stage_mediator, "stage")
         refresh_image_button_comp.bind(self.win.findChild(QPushButton, "btn_refresh"))
+
+        # sort_by_filename_radio_comp.subscribe(image_stage_mediator)
+        # sort_by_filename_radio_comp.bind(
+        #     self.win.findChild(QRadioButton, "radio_sort_by_filename")
+        # )
+
+        # sort_by_filesize_radio_comp.subscribe(image_stage_mediator)
+        # sort_by_filesize_radio_comp.bind(
+        #     self.win.findChild(QRadioButton, "radio_sort_by_filesize")
+        # )
+
+        # sort_as_asc_radio_comp.subscribe(image_stage_mediator)
+        # sort_as_asc_radio_comp.bind(self.win.findChild(QRadioButton, "radio_asc"))
+
+        # sort_as_desc_radio_comp.subscribe(image_stage_mediator)
+        # sort_as_desc_radio_comp.bind(self.win.findChild(QRadioButton, "radio_desc"))
 
 
 # 1. 注册文件夹单层radio按钮事件

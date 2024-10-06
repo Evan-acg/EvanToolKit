@@ -1,160 +1,139 @@
+from abc import ABC, abstractmethod
+from enum import Enum
 import os
+from turtle import width
 import typing as t
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QFileDialog,
     QLineEdit,
     QListWidget,
-    QPushButton,
     QListWidgetItem,
+    QPushButton,
+    QRadioButton,
+    QWidget,
 )
-from PySide6.QtGui import QPixmap, QIcon
 
 from app.modules.common.collector import ImageCollector
+from app.modules.event import Component, Mediator
 
 
-class Mediator(t.Protocol):
-    def bind(self, *args, **kwargs) -> None:
-        pass
 
-    def acquire(self, *args, **kwargs) -> t.Any:
-        pass
-
-    def notify(self, *args, **kwargs) -> None:
-        pass
-
-
-class Component(t.Protocol):
-
-    def subscribe(self, *args, **kwargs) -> None:
-        pass
-
-    def bind(self, *args, **kwargs) -> None:
-        pass
-
-    def invoke(self, *args, **kwargs) -> None:
-        pass
-
-    def notify(self, *args, **kwargs) -> None:
-        pass
-
-
-class FolderInputMediator:
-    def __init__(self) -> None:
-        self.widget: QLineEdit | None = None
-
-    def bind(self, widget: QLineEdit | None) -> None:
-        self.widget = widget
+class FolderInputMediator(Mediator):
 
     def acquire(self) -> str:
-        if self.widget is None:
+        widget: QLineEdit | None = t.cast(QLineEdit, self.widgets.get(None))
+        if widget is None:
             return ""
-        return self.widget.text()
+        return widget.text()
 
     def notify(self, message: str) -> None:
-        if self.widget is None:
+        widget: QLineEdit | None = t.cast(QLineEdit, self.widgets.get(None))
+        if widget is None:
             return
-        self.widget.setText(message)
+        widget.setText(message)
 
 
-class ImageStageMediator:
+class ImageStageMediator(Mediator):
+    class Comp(Enum):
+        BUTTON = "BUTTON"
+        STAGE = "STAGE"
+
     def __init__(self) -> None:
-        self.widget: QListWidget | None = None
         self.collector: ImageCollector = ImageCollector()
-
-    def bind(self, widget: QListWidget | None) -> None:
-        self.widget = widget
 
     def acquire(self) -> None:
         return
 
-    def assemble_list_item(self, paths: t.Sequence[str]) -> t.List[QListWidgetItem]:
-        items: t.List[QListWidgetItem] = []
-        for path in paths:
-            item: QListWidgetItem = QListWidgetItem(path)
-            pix: QPixmap = QPixmap(path).scaledToWidth(256)
-            item.setIcon(QIcon(pix))
-            item.setText(os.path.basename(path))
-            items.append(item)
-        return items
+    def _build_list_item(self, path: str):
+        item: QListWidgetItem = QListWidgetItem(path)
+        pix: QPixmap = QPixmap(path).scaledToWidth(256)
+        item.setIcon(QIcon(pix))
+        item.setText(os.path.basename(path))
+        return item
+
+    def assemble_list_item(self, paths: t.Sequence[str]) -> None:
+        widget: QListWidget | None = t.cast(
+            QListWidget, self.widgets.get(self.Comp.STAGE)
+        )
+        if widget is None:
+            return
+        widget.clear()
+        with ThreadPoolExecutor() as executor:
+            tasks = [executor.submit(self._build_list_item, path) for path in paths]
+
+        for result in as_completed(tasks):
+            widget.addItem(result.result())
 
     def notify(self, message: str) -> None:
         image_paths = self.collector.collect(message)
-        list_items = self.assemble_list_item(image_paths)
-        if self.widget is None:
-            return
-        self.widget.clear()
-        for item in list_items:
-            self.widget.addItem(item)
+        self.assemble_list_item(image_paths)
 
 
-class FindWorkFolderButtonComp:
-    def __init__(self) -> None:
-        self.root_path: str = os.path.expanduser("~")
 
-        self.mediator: t.Dict[str | None, Mediator] = {}
-        self.widget: QPushButton | None = None
-        self.message: str = ""
-
-    def subscribe(self, mediator: Mediator) -> None:
-        self.mediator[None] = mediator
-
-    def bind(self, widget: QPushButton | None) -> None:
-        self.widget = widget
-        if widget is None:
-            return
-
-        widget.clicked.connect(self.invoke)
-
-    def invoke(self) -> None:
-        path: str = QFileDialog.getExistingDirectory(
-            None, "Select Folder", self.root_path
-        )
-        if path == "":
-            return
-        self.message = path
-        self.notify()
-
-    def notify(self) -> None:
-        mediator = self.mediator.get(None)
-        if mediator is None:
-            return
-        mediator.notify(self.message)
-
-
-class RefreshImageButtonComp:
+class SortByFilenameRadioComp:
     def __init__(self) -> None:
         self.mediator: t.Dict[str | None, Mediator] = {}
-        self.widget: QPushButton | None = None
+        self.widget: QRadioButton | None = None
 
-    def subscribe(self, mediator: Mediator, name: str) -> None:
+    def subscribe(self, mediator: Mediator, name: str | None) -> None:
         self.mediator[name] = mediator
 
     def bind(self, widget: t.Any) -> None:
         self.widget = widget
         if widget is None:
             return
-        widget.clicked.connect(self.invoke)
+        widget.checked.connect(self.invoke)
 
     def invoke(self) -> None:
-        button_mediator = self.mediator.get("button")
-        stage_mediator = self.mediator.get("stage")
-        if button_mediator is None:
-            return
-
-        path: str = button_mediator.acquire()
-
-        if stage_mediator is None:
-            return
-
-        stage_mediator.notify(path)
+        pass
 
     def notify(self) -> None:
-        if self.mediator is None:
-            return
-
-        mediator = self.mediator.get("stage")
+        mediator = self.mediator.get(None)
         if mediator is None:
             return
-
         mediator.notify()
+
+
+class SortByFileSizeRadioComp:
+    def subscribe(self) -> None:
+        pass
+
+    def bind(self) -> None:
+        pass
+
+    def invoke(self) -> None:
+        pass
+
+    def notify(self) -> None:
+        pass
+
+
+class SortAsAccRadioComp:
+    def subscribe(self) -> None:
+        pass
+
+    def bind(self) -> None:
+        pass
+
+    def invoke(self) -> None:
+        pass
+
+    def notify(self) -> None:
+        pass
+
+
+class SortAsDescRadioComp:
+    def subscribe(self) -> None:
+        pass
+
+    def bind(self) -> None:
+        pass
+
+    def invoke(self) -> None:
+        pass
+
+    def notify(self) -> None:
+        pass

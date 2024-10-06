@@ -1,7 +1,7 @@
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication
 
-from app.modules.image.blz import ImageToolBlz
+from app.modules.controller.image_controller import ImageController
 
 ui_loader = QUiLoader()
 
@@ -10,7 +10,8 @@ class EvanToolkitApp(QApplication):
     def __init__(self) -> None:
         super().__init__([])
         self.ui = ui_loader.load("app/resources/EvanToolkit.ui")
-        self.blz = ImageToolBlz(self.ui)
+        # self.blz = ImageToolBlz(self.ui)
+        self.image_controller = ImageController(self.ui)
 
 
 def main():
