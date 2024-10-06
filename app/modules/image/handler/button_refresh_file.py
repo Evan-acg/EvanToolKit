@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.modules.acton.strategy import ActionImageAcquire, ImageAcquirePayload
-from app.modules.image.event import IHandler
+from app.modules.image.handler import IHandler
 from app.utils.image import is_image
 from app.utils.pyqt import find_element
 
@@ -65,10 +65,22 @@ class FolderRefreshButtonHandler(IHandler):
             item.setText(osp.basename(image_path))
             container.addItem(item)
 
+    def pre_exam(self, path: str) -> bool:
+        if not path:
+            QMessageBox.warning(self.root, "Warning", "请先选择文件夹")
+            return False
+        if not osp.exists(path):
+            QMessageBox.warning(self.root, "Warning", "文件夹不存在")
+            return False
+
+        return True
+
     def handler(self) -> None:
         inp_widget = self.root.findChild(QLineEdit, "inp_folder")
         # folder_path = inp_widget.text()
         folder_path: str = r"\\Eden_ds\sex\日本\图集\@仓木麻衣@青野真衣@くらき まい"
+        if not self.pre_exam(folder_path):
+            return
 
         is_deeps: bool = find_element(
             self.root, QRadioButton, "radio_multiple_deeps", "isChecked", False
@@ -76,13 +88,6 @@ class FolderRefreshButtonHandler(IHandler):
         is_desc = find_element(
             self.root, QRadioButton, "radio_desc", "isChecked", False
         )
-
-        if not folder_path:
-            QMessageBox.warning(self.root, "Warning", "请先选择文件夹")
-            return
-        if not osp.exists(folder_path):
-            QMessageBox.warning(self.root, "Warning", "文件夹不存在")
-            return
 
         image_paths = self.find_images(folder_path, is_deeps)
         image_paths = self.sort_images(image_paths, is_desc)
@@ -99,3 +104,6 @@ class FolderRefreshButtonHandler(IHandler):
         if widget is None:
             return
         widget.clicked.connect(self.handler)
+
+
+# Todo: Image的数据放在这里并不合适，因为还有其他的模块需要使用这些数据, 比如排序模块

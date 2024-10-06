@@ -1,12 +1,9 @@
 from PySide6.QtWidgets import QWidget, QPushButton, QFileDialog, QLineEdit
 import os.path as osp
 
-from app.modules.image.event import IHandler
 
-
-class FolderSelectButtonHandler(IHandler):
+class FolderSelectButtonHandler:
     def __init__(self, root: QWidget) -> None:
-        super().__init__(root)
         self.widget: QPushButton | None = self.root.findChild(
             QPushButton, "btn_select_folder"
         )
