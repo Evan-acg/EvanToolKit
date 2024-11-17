@@ -5,5 +5,7 @@ authors = ["Evan"]
 
 
 [tool.pytest.ini_options]
-testpaths = ["tests/cases"]
 addopts = "-vs --lf"
+testpaths= [
+"tests/cases"
+]

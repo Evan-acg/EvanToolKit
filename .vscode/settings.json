@@ -1,7 +1,12 @@
 {
     "cSpell.words": [
+        "bilibili",
+        "Ffpeocessor",
+        "ffprobe",
         "Pixmap",
-        "pyqt"
+        "pyqt",
+        "referer",
+        "tqdm"
     ],
     "python.testing.pytestArgs": [
         "."
